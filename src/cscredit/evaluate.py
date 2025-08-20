@@ -10,7 +10,7 @@ DATA_PROCESSED = ROOT / "data" / "processed"
 MODELS = ROOT / "models"
 REPORTS = ROOT / "reports"
 
-TARGET = "is_default"  # <-- örnek verinin hedefi
+TARGET = "is_default"
 
 def main():
     model = joblib.load(MODELS / "model.joblib")
