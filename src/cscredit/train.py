@@ -98,8 +98,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-
-
-df = load_raw("sample_credit.csv")
-target = "is_default"
