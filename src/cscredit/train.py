@@ -24,8 +24,9 @@ MODELS.mkdir(parents=True, exist_ok=True)
 REPORTS.mkdir(parents=True, exist_ok=True)
 
 # ---- config ----
-FILENAME = "sample_credit.csv"      # data/raw/ içine koyacağın dosya
-TARGET   = "is_default"             # örnek veride hedef kolon
+FILENAME = "UCI_credit_card.csv"
+TARGET   = "default.payment.next.month"
+
 
 
 def main():

@@ -1,5 +1,5 @@
 {
-  "holdout_roc_auc": 0.7095959595959596,
-  "holdout_pr_auc": 0.34460211243151784,
-  "holdout_brier": 0.09641695514403585
+  "holdout_roc_auc": 0.7185987099081256,
+  "holdout_pr_auc": 0.4957820750022018,
+  "holdout_brier": 0.14628983801696893
 }

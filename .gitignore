@@ -205,3 +205,19 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# ---- Project-specific (keep repo clean) ----
+
+# 1) Raw & processed data (do not track data files)
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+data/interim/*
+!data/interim/.gitkeep
+
+# 2) Model artifacts (binary files)
+models/*.joblib
+
+# 3) (Optional) Reports that change every run
+# reports/metrics*.json
