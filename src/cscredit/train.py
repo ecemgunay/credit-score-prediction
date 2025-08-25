@@ -1,5 +1,6 @@
 # Minimal training script for UCI Credit Card Default (Taiwan, 2005)
 from pathlib import Path
+import numpy as np
 import json
 import joblib
 import pandas as pd
@@ -34,13 +35,62 @@ def main():
     df = pd.read_csv(DATA_RAW / FILENAME)
 
     # 2) quick clean
+    #if "ID" in df.columns:
+    #    df = df.drop(columns=["ID"])
+
+    # 3) mark categoricals (opsiyonel ama faydalı)
+    #for c in ["SEX", "EDUCATION", "MARRIAGE"]:
+    #    if c in df.columns:
+    #        df[c] = df[c].astype("category")
+
+     # --- UCI quick clean & lightweight features ---
     if "ID" in df.columns:
         df = df.drop(columns=["ID"])
 
-    # 3) mark categoricals (opsiyonel ama faydalı)
+    # normalize weird category codes
+    if "EDUCATION" in df.columns:
+        df["EDUCATION"] = df["EDUCATION"].replace({0: 4, 5: 4, 6: 4}).astype("category")
+    if "MARRIAGE" in df.columns:
+        df["MARRIAGE"] = df["MARRIAGE"].replace({0: 3}).astype("category")
     for c in ["SEX", "EDUCATION", "MARRIAGE"]:
         if c in df.columns:
             df[c] = df[c].astype("category")
+
+    
+    BILL_COLS  = [f"BILL_AMT{i}" for i in range(1, 7) if f"BILL_AMT{i}" in df.columns]
+    PAY_COLS   = [f"PAY_AMT{i}"  for i in range(1, 7) if f"PAY_AMT{i}"  in df.columns]
+    DELAY_COLS = [f"PAY_{i}"     for i in range(1, 7) if f"PAY_{i}"     in df.columns]
+
+    # utilization (bills / limit)
+    if "LIMIT_BAL" in df.columns and BILL_COLS:
+        bills = df[BILL_COLS].fillna(0)
+        limit = df["LIMIT_BAL"].replace(0, np.nan).astype(float)
+        util = bills.div(limit, axis=0).clip(0, 10)
+        df["util_avg"] = util.mean(axis=1)
+
+    # payment ratio (payments / bills)
+    if BILL_COLS and PAY_COLS:
+        pays = df[PAY_COLS].fillna(0)
+        bills = df[BILL_COLS].replace(0, np.nan).abs()
+        pay_ratio = pays.div(bills + 1e-6, axis=0).clip(0, 5)
+        df["pay_ratio_avg"] = pay_ratio.mean(axis=1)
+
+    # delays
+    if DELAY_COLS:
+        delays = df[DELAY_COLS].fillna(0)
+        df["max_delay"] = delays.max(axis=1)
+        df["num_late"]  = (delays > 0).sum(axis=1)
+        if "PAY_0" in df.columns:
+            df["recent_delay"] = df["PAY_0"]
+        elif "PAY_1" in df.columns:
+            df["recent_delay"] = df["PAY_1"]
+
+    # bill trend (linear slope)
+    if BILL_COLS:
+        x = np.arange(1, len(BILL_COLS) + 1)
+        df["bill_trend"] = df[BILL_COLS].apply(
+            lambda r: np.polyfit(x, r.values.astype(float), 1)[0], axis=1
+        )
 
     # 4) split X/y
     X = df.drop(columns=[TARGET])
